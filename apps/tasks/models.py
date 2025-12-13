@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from apps.projects.models import Project
 
 class TaskStatus(models.TextChoices):
   NEW = 'new', 'New',
@@ -11,6 +11,11 @@ class TaskStatus(models.TextChoices):
 class Task(models.Model):
   title = models.CharField(max_length=255)
   description = models.TextField(blank=True)
+  project = models.ForeignKey(
+    Project,
+    on_delete=models.CASCADE,
+    related_name='tasks'
+  )
   assignee = models.ForeignKey(
     User,
     on_delete=models.SET_NULL,
@@ -34,4 +39,4 @@ class Task(models.Model):
 
   def __str__(self):
       return self.title
-  
+

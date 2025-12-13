@@ -4,7 +4,6 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Project
 
 class ProjectViewSet(ModelViewSet):
-  queryset = Project.objects.all()
   serializer_class = ProjectSerializer
   permission_classes = [IsAuthenticated]
 
@@ -13,4 +12,8 @@ class ProjectViewSet(ModelViewSet):
     Автоматически связывает нашего пользователя с новым проектом
     """
     serializer.save(owner=self.request.user)
+
+  def get_queryset(self):
+    """ Показывает проекты только текущего пользователя """
+    return Project.objects.filter(owner=self.request.user)
 

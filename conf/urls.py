@@ -6,8 +6,8 @@ from apps.tasks.views import TaskViewSet
 
 
 router = DefaultRouter()
-router.register('projects', ProjectViewSet)
-router.register('tasks', TaskViewSet)
+router.register('projects', ProjectViewSet, basename='project')
+router.register('tasks', TaskViewSet, basename='task')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

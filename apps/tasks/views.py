@@ -2,10 +2,13 @@ from rest_framework.viewsets import ModelViewSet
 from .serializers import TaskSerializer
 from rest_framework.permissions import IsAuthenticated
 from .models import Task
+from .permissions import IsAssigneeOrProjectOwner
+from django.db.models import Q
+
 
 class TaskViewSet(ModelViewSet):
   serializer_class = TaskSerializer
-  permission_classes = [IsAuthenticated]
+  permission_classes = [IsAuthenticated, IsAssigneeOrProjectOwner]
 
   def perform_create(self, serializer):
     """
@@ -15,4 +18,4 @@ class TaskViewSet(ModelViewSet):
 
   def get_queryset(self):
     """ Показывает задачи, которые пренадлежат проектам только текущего пользователя """
-    return Task.objects.filter(project__owner=self.request.user)
+    return Task.objects.filter(project__owner=self.request.user) | Task.objects.filter(assignee=self.request.user)

@@ -24,7 +24,8 @@ INSTALLED_APPS = [
 ]
 
 INSTALLED_APPS += [
-  'apps.projects'
+  'apps.projects',
+  'apps.tasks',
 ]
 
 MIDDLEWARE = [

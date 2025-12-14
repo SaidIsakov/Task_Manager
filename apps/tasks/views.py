@@ -5,7 +5,6 @@ from .models import Task
 from .permissions import IsAssigneeOrProjectOwner
 from django.db.models import Q
 
-
 class TaskViewSet(ModelViewSet):
   serializer_class = TaskSerializer
   permission_classes = [IsAuthenticated, IsAssigneeOrProjectOwner]
@@ -17,5 +16,8 @@ class TaskViewSet(ModelViewSet):
     serializer.save(created_by=self.request.user)
 
   def get_queryset(self):
-    """ Показывает задачи, которые пренадлежат проектам только текущего пользователя """
-    return Task.objects.filter(project__owner=self.request.user) | Task.objects.filter(assignee=self.request.user)
+    """ Показывает задачи только владельцам проекта и кому принадлежит задача """
+    user = self.request.user
+    return Task.objects.filter(
+      Q(project__owner=user) | Q(assignee=user)
+    )

@@ -3,6 +3,8 @@ from .serializers import ProjectSerializer
 from rest_framework.permissions import IsAuthenticated
 from .models import Project
 from .permissions import IsProjectOwner
+from django.db.models import Q
+
 
 class ProjectViewSet(ModelViewSet):
   serializer_class = ProjectSerializer
@@ -15,6 +17,10 @@ class ProjectViewSet(ModelViewSet):
     serializer.save(owner=self.request.user)
 
   def get_queryset(self):
-    """ Показывает проекты только текущего пользователя """
-    return Project.objects.filter(owner=self.request.user)
+    """ Проеты видит толко участник и владелец """
+    user = self.request.user
+
+    return Project.objects.filter(
+      Q(owner=user) | Q(members=user)
+    ).distinct()
 

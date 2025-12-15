@@ -5,5 +5,4 @@ from .models import Project
 class ProjectAdmin(admin.ModelAdmin):
   list_display = ['name', 'description', 'created_at']
   readonly_fields = ['created_at']
-  filter_horizontal = ['members']
 

@@ -2,12 +2,11 @@ from rest_framework.viewsets import ModelViewSet
 from .serializers import TaskSerializer
 from rest_framework.permissions import IsAuthenticated
 from .models import Task
-from .permissions import IsAssigneeOrProjectOwner
+from .permissions import CanCreateTask, CanUpdateTask, CanDeleteTask,IsTaskProjectMember
 from django.db.models import Q
 
 class TaskViewSet(ModelViewSet):
   serializer_class = TaskSerializer
-  permission_classes = [IsAuthenticated, IsAssigneeOrProjectOwner]
 
   def perform_create(self, serializer):
     """
@@ -21,3 +20,12 @@ class TaskViewSet(ModelViewSet):
     return Task.objects.filter(
       Q(project__owner=user) | Q(assignee=user)
     )
+
+  def get_permissions(self):
+    if self.action in ['create']:
+      return [CanCreateTask()]
+    if self.action in ['update', 'partial_update']:
+      return [CanUpdateTask()]
+    if self.action in ['destroy']:
+      return [CanDeleteTask()]
+    return [IsTaskProjectMember()]

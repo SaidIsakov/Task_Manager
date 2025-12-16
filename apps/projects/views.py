@@ -21,6 +21,6 @@ class ProjectViewSet(ModelViewSet):
     user = self.request.user
 
     return Project.objects.filter(
-      Q(owner=user) | Q(members=user)
+      Q(owner=user) | Q(members__user=user, members__is_active=True)
     ).distinct()
 

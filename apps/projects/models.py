@@ -19,7 +19,7 @@ class Project(models.Model):
 class ProjectRole(models.TextChoices):
   OWNER = 'OWNER', 'Owner',
   ADMIN = 'ADMIN', 'Admin',
-  MEMBER = 'MEMEBER', 'Member',
+  MEMBER = 'MEMBER', 'Member',
   VIEWER = 'VIEWER', 'Viewer'
 
 
@@ -51,3 +51,6 @@ class ProjectMember(models.Model):
 
   class Meta:
     unique_together = ('user', 'project')
+
+  def __str__(self):
+      return self.user.username

@@ -4,10 +4,12 @@ from apps.projects.models import Project, ProjectMember, ProjectRole
 
 class TaskSerializer(serializers.ModelSerializer):
   assignee = serializers.CharField()
-  
+  created_by = serializers.CharField()
+
   class Meta:
     model = Task
-    fields = ['title',
+    fields = ['id',
+              'title',
               'description',
               'project',
               'assignee',
@@ -50,7 +52,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
     if membership.role == ProjectRole.MEMBER:
       if new_assignee != user:
-        return serializers.ValidationError(
+        raise serializers.ValidationError(
           'MEMBER может назначать исполнителем только себя'
         )
     try:

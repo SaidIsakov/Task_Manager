@@ -25,7 +25,7 @@ class CanCreateTask(BasePermission):
   def has_permission(self, request, view):
     project_id = request.data.get('project')
     if not project_id:
-      False
+      return False
 
     membership = get_project_membership(
       request.user,

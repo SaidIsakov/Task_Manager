@@ -2,7 +2,7 @@ from rest_framework.viewsets import ModelViewSet
 from .serializers import TaskSerializer
 from rest_framework.permissions import IsAuthenticated
 from .models import Task
-from .permissions import CanCreateTask, CanUpdateTask, CanDeleteTask,IsTaskProjectMember
+from .permissions import CanCreateTask, CanUpdateTask, CanDeleteTask,IsTaskProjectMember, ProjectRole
 from django.db.models import Q
 
 class TaskViewSet(ModelViewSet):
@@ -18,7 +18,7 @@ class TaskViewSet(ModelViewSet):
     """ Показывает задачи только владельцам проекта и кому принадлежит задача """
     user = self.request.user
     return Task.objects.filter(
-      Q(project__owner=user) | Q(assignee=user)
+    Q(project__owner=user) | Q(assignee=user)
     )
 
   def get_permissions(self):

@@ -11,3 +11,4 @@ class ProjectAdmin(admin.ModelAdmin):
 class ProjectMemberAdmin(admin.ModelAdmin):
   list_display = ['user', 'project', 'role',
                   'invited_by', 'joined_at', 'is_active']
+  list_filter = ['id']

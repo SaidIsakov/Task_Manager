@@ -29,9 +29,8 @@ class CanCreateTask(BasePermission):
 
     membership = get_project_membership(
       request.user,
-      project_id=project_id,
-      is_active=True
-    ).first()
+      project_id,
+    )
 
     if not membership:
       return False

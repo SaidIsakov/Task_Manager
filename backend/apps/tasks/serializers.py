@@ -3,7 +3,7 @@ from .models import Task
 from apps.projects.models import Project, ProjectMember, ProjectRole
 
 class TaskSerializer(serializers.ModelSerializer):
-  assignee = serializers.CharField()
+  # assignee = serializers.CharField()
   created_by = serializers.CharField()
 
   class Meta:

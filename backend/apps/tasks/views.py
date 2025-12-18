@@ -1,10 +1,8 @@
 from rest_framework.viewsets import ModelViewSet
 from .serializers import TaskSerializer
-from rest_framework.permissions import IsAuthenticated
 from .models import Task
-from .permissions import CanCreateTask, CanUpdateTask, CanDeleteTask,IsTaskProjectMember, ProjectRole
+from .permissions import CanCreateTask, CanUpdateTask, CanDeleteTask,IsTaskProjectMember
 from django.db.models import Q
-
 class TaskViewSet(ModelViewSet):
   serializer_class = TaskSerializer
 

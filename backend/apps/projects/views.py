@@ -8,7 +8,7 @@ from django.db.models import Q
 
 class ProjectViewSet(ModelViewSet):
   serializer_class = ProjectSerializer
-
+  pagination_class = None
   def perform_create(self, serializer):
     """
     Автоматически связывает нашего пользователя с новым проектом

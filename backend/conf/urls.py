@@ -9,6 +9,7 @@ from rest_framework_simplejwt.views import (
 )
 
 
+
 router = DefaultRouter()
 router.register('projects', ProjectViewSet, basename='project')
 router.register('tasks', TaskViewSet, basename='task')

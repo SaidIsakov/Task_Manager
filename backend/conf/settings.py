@@ -30,6 +30,8 @@ INSTALLED_APPS += [
   'apps.tasks',
   'rest_framework',
   'rest_framework_simplejwt',
+  'django_filters',
+  'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -40,6 +42,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
 ]
 
 ROOT_URLCONF = 'conf.urls'
@@ -112,8 +117,14 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',     # для поиска
+        'rest_framework.filters.OrderingFilter',    # для сортировки
+    ],
+
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 100
+    'PAGE_SIZE': 100,
 }
 
 
@@ -131,3 +142,11 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
 }
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8011",
+    "http://127.0.0.1:9000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]

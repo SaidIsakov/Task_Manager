@@ -3,8 +3,13 @@ from .serializers import TaskSerializer
 from .models import Task
 from .permissions import CanCreateTask, CanUpdateTask, CanDeleteTask,IsTaskProjectMember
 from django.db.models import Q
+from .filters import TaskFilter
+
+
+
 class TaskViewSet(ModelViewSet):
   serializer_class = TaskSerializer
+  filterset_class = TaskFilter
 
   def perform_create(self, serializer):
     """

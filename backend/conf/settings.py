@@ -28,10 +28,12 @@ INSTALLED_APPS = [
 INSTALLED_APPS += [
   'apps.projects',
   'apps.tasks',
+
   'rest_framework',
   'rest_framework_simplejwt',
   'django_filters',
   'corsheaders',
+  'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -125,6 +127,8 @@ REST_FRAMEWORK = {
 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 100,
+
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 

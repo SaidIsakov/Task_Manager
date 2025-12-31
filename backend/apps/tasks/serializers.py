@@ -4,7 +4,7 @@ from apps.projects.models import Project, ProjectMember, ProjectRole
 
 class TaskSerializer(serializers.ModelSerializer):
   created_by = serializers.PrimaryKeyRelatedField(read_only=True)
-  assignee = serializers.CharField(required=False)
+
 
   class Meta:
     model = Task
@@ -19,12 +19,14 @@ class TaskSerializer(serializers.ModelSerializer):
               'updated_at'
               ]
 
-  def validate(self, attrs):
+  def validate(self,  data):
+    self._validate_completed_task(data)
+
     request = self.context['request']
     user = request.user
 
     if self.instance is None:
-      return attrs
+      return data
 
     task = self.instance
     project = task.project
@@ -40,10 +42,10 @@ class TaskSerializer(serializers.ModelSerializer):
         'Вы не участник проекта'
       )
 
-    new_assignee = attrs.get('assignee', task.assignee)
+    new_assignee = data.get('assignee', task.assignee)
 
     if new_assignee == task.assignee:
-      return attrs
+      return data
 
     if membership.role == ProjectRole.VIEWER:
       raise serializers.ValidationError(
@@ -71,4 +73,10 @@ class TaskSerializer(serializers.ModelSerializer):
         'Нельзя назначить VIEWER исполнителем'
       )
 
-    return attrs
+    return data
+
+  def _validate_completed_task(self, data):
+    if data.get('status') == 'done' and not data.get('description'):
+      raise serializers.ValidationError({
+        'description': 'Завершённая задача должна иметь описание!'
+      })

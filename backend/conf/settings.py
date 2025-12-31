@@ -33,7 +33,6 @@ INSTALLED_APPS += [
   'rest_framework_simplejwt',
   'django_filters',
   'corsheaders',
-  'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -128,7 +127,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 100,
 
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'EXCEPTION_HANDLER': 'apps.utils.exceptions.custom_exception_handler',
 }
 
 

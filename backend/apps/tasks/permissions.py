@@ -3,6 +3,9 @@ from apps.projects.models import ProjectMember, ProjectRole
 
 
 def get_project_membership(user, project):
+  if not user.is_authenticated:
+    return None
+  
   return ProjectMember.objects.filter(
     user=user,
     project=project,
@@ -23,6 +26,9 @@ class CanCreateTask(BasePermission):
   Создавать задачу могут все, кроме VIEWER
   """
   def has_permission(self, request, view):
+    if not request.user.is_authenticated:
+      return None
+
     project_id = request.data.get('project')
     if not project_id:
       return False

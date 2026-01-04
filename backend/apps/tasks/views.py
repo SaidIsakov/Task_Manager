@@ -4,7 +4,7 @@ from .models import Task
 from .permissions import CanCreateTask, CanUpdateTask, CanDeleteTask,IsTaskProjectMember
 from django.db.models import Q
 from .filters import TaskFilter
-
+from .tasks import send_email
 
 
 class TaskViewSet(ModelViewSet):
@@ -15,7 +15,9 @@ class TaskViewSet(ModelViewSet):
     """
     Автоматически связывает нашего пользователя c новой задачей
     """
-    serializer.save(created_by=self.request.user)
+    user = self.request.user
+    send_email(user.email)
+
 
   def get_queryset(self):
     """ Показывает задачи только владельцам проекта и кому принадлежит задача """

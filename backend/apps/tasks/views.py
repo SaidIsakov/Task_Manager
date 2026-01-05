@@ -15,9 +15,9 @@ class TaskViewSet(ModelViewSet):
     """
     Автоматически связывает нашего пользователя c новой задачей
     """
-    user = self.request.user
-    send_email(user.email)
-
+    serializer.save(created_by=self.request.user)
+    task = serializer.save()
+    send_email(task.assignee.email)
 
   def get_queryset(self):
     """ Показывает задачи только владельцам проекта и кому принадлежит задача """

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Task
-from apps.projects.models import Project, ProjectMember, ProjectRole
+from apps.projects.models import ProjectMember, ProjectRole
+
 
 class TaskSerializer(serializers.ModelSerializer):
   created_by = serializers.PrimaryKeyRelatedField(read_only=True)

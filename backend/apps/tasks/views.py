@@ -5,6 +5,10 @@ from .permissions import CanCreateTask, CanUpdateTask, CanDeleteTask,IsTaskProje
 from django.db.models import Q
 from .filters import TaskFilter
 from .tasks import send_email
+from django.views.generic import TemplateView
+
+class IndexView(TemplateView):
+  template_name = 'index.html'
 
 
 class TaskViewSet(ModelViewSet):
@@ -15,8 +19,7 @@ class TaskViewSet(ModelViewSet):
     """
     Автоматически связывает нашего пользователя c новой задачей
     """
-    serializer.save(created_by=self.request.user)
-    task = serializer.save()
+    task = serializer.save(created_by=self.request.user)
     send_email(task.assignee.email)
 
   def get_queryset(self):

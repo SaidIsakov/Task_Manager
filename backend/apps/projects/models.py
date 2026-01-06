@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.auth.models import User
 from django.conf import settings
 
 
@@ -8,7 +7,7 @@ class Project(models.Model):
   name = models.CharField(max_length=255)
   description = models.TextField(blank=True)
   owner = models.ForeignKey(
-    User, on_delete=models.CASCADE, related_name='owned_projects'
+    settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='owned_projects'
   )
   created_at = models.DateTimeField(auto_now_add=True)
 
@@ -25,7 +24,7 @@ class ProjectRole(models.TextChoices):
 
 class ProjectMember(models.Model):
   user = models.ForeignKey(
-    User,
+    settings.AUTH_USER_MODEL,
     on_delete=models.CASCADE,
     related_name='project_memberships'
   )
@@ -40,7 +39,7 @@ class ProjectMember(models.Model):
     default=ProjectRole.MEMBER
   )
   invited_by = models.ForeignKey(
-    User,
+    settings.AUTH_USER_MODEL,
     null=True,
     blank=True,
     on_delete=models.SET_NULL,

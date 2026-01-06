@@ -1,6 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import User
 from apps.projects.models import Project
+from django.conf import settings
 
 class TaskStatus(models.TextChoices):
   NEW = 'new', 'New',
@@ -17,7 +17,7 @@ class Task(models.Model):
     related_name='tasks'
   )
   assignee = models.ForeignKey(
-    User,
+    settings.AUTH_USER_MODEL,
     on_delete=models.SET_NULL,
     null=True,
     blank=True,
@@ -30,7 +30,7 @@ class Task(models.Model):
   )
 
   created_by = models.ForeignKey(
-    User,
+    settings.AUTH_USER_MODEL,
     on_delete=models.CASCADE,
     related_name='created_tasks'
   )

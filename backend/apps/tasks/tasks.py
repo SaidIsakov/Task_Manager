@@ -4,16 +4,13 @@ from django.conf import settings
 
 
 @shared_task
-def send_email_assignee(username):
+def send_email_assignee(telegram_id, text):
   bot_token = settings.TELEGRAM_BOT_TOKEN
-  chat_id = settings.TELEGRAM_CHAT_ID
 
-  text = f"""
- @{username} у вас появилась новая задача!
-      """
+
   url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
   data = {
-    'chat_id': chat_id,
+    'chat_id': telegram_id,
     'text': text
   }
   try:

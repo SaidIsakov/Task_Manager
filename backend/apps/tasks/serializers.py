@@ -6,7 +6,6 @@ from apps.projects.models import ProjectMember, ProjectRole
 class TaskSerializer(serializers.ModelSerializer):
   created_by = serializers.PrimaryKeyRelatedField(read_only=True)
 
-
   class Meta:
     model = Task
     fields = ['id',
@@ -17,7 +16,7 @@ class TaskSerializer(serializers.ModelSerializer):
               'status',
               'created_by',
               'created_at',
-              'updated_at'
+              'updated_at',
               ]
 
   def validate(self,  data):

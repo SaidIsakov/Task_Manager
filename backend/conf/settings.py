@@ -25,16 +25,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 
+AUTH_USER_MODEL = 'users.User'
 
 INSTALLED_APPS += [
   # apps
   'apps.projects',
   'apps.tasks',
-
+  'apps.users',
 
   # drf
   'rest_framework',
-  'rest_framework_simplejwt',
   'django_filters',
   'corsheaders',
 
@@ -133,9 +133,6 @@ STATIC_URL = 'static/'
 REST_FRAMEWORK = {
      'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
-        # 'rest_framework.authentication.BasicAuthentication',
-        # 'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-        # 'drf_social_oauth2.authentication.SocialAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -160,7 +157,6 @@ AUTHENTICATION_BACKENDS = (
 )
 
 
-
 LOGIN_REDIRECT_URL = '/'
 
 
@@ -183,3 +179,18 @@ CELERY_TASK_SERIALIZER = 'json'
 SOCIAL_AUTH_TELEGRAM_BOT_TOKEN = config('SOCIAL_AUTH_TELEGRAM_BOT_TOKEN')
 TELEGRAM_BOT_TOKEN = config('TELEGRAM_BOT_TOKEN')
 TELEGRAM_CHAT_ID = config('TELEGRAM_CHAT_ID')
+
+
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'apps.users.pipeline.save_telegram_id',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+)
+

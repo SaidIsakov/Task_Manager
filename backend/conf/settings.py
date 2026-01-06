@@ -6,7 +6,6 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-
 SECRET_KEY = config('SECRET_KEY')
 
 
@@ -15,7 +14,6 @@ DEBUG = config('DEBUG')
 ALLOWED_HOSTS = [
   '*'
 ]
-
 
 
 INSTALLED_APPS = [
@@ -27,10 +25,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 
+
 INSTALLED_APPS += [
   # apps
   'apps.projects',
   'apps.tasks',
+
 
   # drf
   'rest_framework',
@@ -43,6 +43,7 @@ INSTALLED_APPS += [
     'social_django',
     'drf_social_oauth2',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -57,9 +58,12 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
 ]
 
+
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
 
+
 ROOT_URLCONF = 'conf.urls'
+
 
 TEMPLATES = [
     {
@@ -78,6 +82,7 @@ TEMPLATES = [
     },
 ]
 
+
 WSGI_APPLICATION = 'conf.wsgi.application'
 
 
@@ -92,7 +97,6 @@ DATABASES = {
         'PORT': config('DB_PORT'),
     }
 }
-
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -111,12 +115,14 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-
 LANGUAGE_CODE = 'en-us'
+
 
 TIME_ZONE = 'UTC'
 
+
 USE_I18N = True
+
 
 USE_TZ = True
 
@@ -125,14 +131,11 @@ STATIC_URL = 'static/'
 
 
 REST_FRAMEWORK = {
-    # 'DEFAULT_AUTHENTICATION_CLASSES': [
-    #     'rest_framework_simplejwt.authentication.JWTAuthentication',
-    # ],
      'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
-        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-        'drf_social_oauth2.authentication.SocialAuthentication',
+        # 'rest_framework.authentication.BasicAuthentication',
+        # 'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+        # 'drf_social_oauth2.authentication.SocialAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -149,29 +152,16 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'apps.utils.exceptions.custom_exception_handler',
 }
 
+
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.telegram.TelegramAuth',
     'drf_social_oauth2.backends.DjangoOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 )
 
-LOGIN_REDIRECT_URL = '/'
-SOCIAL_AUTH_TELEGRAM_BOT_TOKEN = config('SOCIAL_AUTH_TELEGRAM_BOT_TOKEN')
 
-# SIMPLE_JWT = {
-#     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-#     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-#     'ROTATE_REFRESH_TOKENS': True,
-#     'BLACKLIST_AFTER_ROTATION': True,
-#     'UPDATE_LAST_LOGIN': True,
-#     'ALGORITHM': 'HS256',
-#     'SIGNING_KEY': SECRET_KEY,
-#     'VERIFYING_KEY': None,
-#     'AUTH_HEADER_TYPES': ('Bearer',),
-#     'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
-#     'USER_ID_FIELD': 'id',
-#     'USER_ID_CLAIM': 'user_id',
-# }
+
+LOGIN_REDIRECT_URL = '/'
 
 
 CORS_ALLOWED_ORIGINS = [
@@ -187,3 +177,9 @@ CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+
+
+#Telegram
+SOCIAL_AUTH_TELEGRAM_BOT_TOKEN = config('SOCIAL_AUTH_TELEGRAM_BOT_TOKEN')
+TELEGRAM_BOT_TOKEN = config('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID = config('TELEGRAM_CHAT_ID')

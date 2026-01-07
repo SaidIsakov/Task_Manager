@@ -17,6 +17,7 @@ class TaskSerializer(serializers.ModelSerializer):
               'created_by',
               'created_at',
               'updated_at',
+              'deadline'
               ]
 
   def validate(self,  data):

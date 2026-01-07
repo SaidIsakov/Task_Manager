@@ -28,6 +28,7 @@ class TaskViewSet(ModelViewSet):
       description: {task.description}
       status: {task.status}
       project: {task.project}
+      deadline: {task.deadline}
       """
     send_email_assignee(task.assignee.telegram_id, text)
 

@@ -144,9 +144,9 @@ REST_FRAMEWORK = {
     ],
 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 100,
+    'PAGE_SIZE': 10,
 
-    'EXCEPTION_HANDLER': 'apps.utils.exceptions.custom_exception_handler',
+    # 'EXCEPTION_HANDLER': 'apps.utils.exceptions.custom_exception_handler',
 }
 
 

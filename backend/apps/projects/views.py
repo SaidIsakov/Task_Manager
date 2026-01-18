@@ -25,8 +25,8 @@ class ProjectViewSet(ModelViewSet):
   def get_queryset(self):
     """ Проеты видит толко участник и владелец """
     user = self.request.user
-
+    
     return Project.objects.filter(
-      Q(owner=user) | Q(members__user=user, members__is_active=True)
+      Q(owner=user) | Q(members__user=user)
     ).distinct()
 

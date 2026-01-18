@@ -6,6 +6,7 @@ from django.db.models import Q
 from .filters import TaskFilter
 from .tasks import send_email_assignee
 from django.views.generic import TemplateView
+from apps.projects.models import ProjectMember, ProjectRole
 
 class IndexView(TemplateView):
   template_name = 'index.html'
@@ -35,6 +36,7 @@ class TaskViewSet(ModelViewSet):
   def get_queryset(self):
     """ Показывает задачи только владельцам проекта и кому принадлежит задача """
     user = self.request.user
+    
     return Task.objects.filter(
     Q(project__owner=user) | Q(assignee=user)
     )

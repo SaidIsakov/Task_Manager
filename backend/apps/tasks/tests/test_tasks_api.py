@@ -54,6 +54,7 @@ def test_project_owner_can_see_all_tasks_in_project(user, project, project_membe
 
   Task.objects.create(title="Test task other_user", description="Test task Desc other_user", project=project, assignee=other_user, status="new", created_by=other_user)
 
+  #! Запрос делает другой user(owner)
   response = auth_client.get(url)
   result = response.data['results']
   assert len(result) == 2
@@ -91,4 +92,38 @@ def test_project_member_sees_only_own_tasks(user, project):
 
   assert response.status_code == status.HTTP_200_OK
   assert len(result) == 1
-  assert result[0]["title"] == "OTHER_USER1_TASK"
+  print(result)
+  assert result[0]["title"] == "USER1_TASK"
+
+
+@pytest.mark.django_db
+def test_admin_sees_all_tasks_in_project(project):
+  """
+    Админ проекта видит все задачи
+  """
+  url = '/api/tasks/'
+  client = APIClient()
+
+  admin_user = User.objects.create(username='admin_user')
+  member1 = User.objects.create(username='member1')
+  member2 = User.objects.create(username='member2')
+
+  #! Назначаю роли
+  ProjectMember.objects.create(user=admin_user, project=project, role=ProjectRole.ADMIN)
+  ProjectMember.objects.create(user=member1, project=project, role=ProjectRole.MEMBER)
+  ProjectMember.objects.create(user=member2, project=project, role=ProjectRole.MEMBER)
+
+   #! Создал задачу для пользователя 1
+  Task.objects.create(title="member1", description="Test task Desc member1", project=project, assignee=member1, status="new", created_by=admin_user)
+
+  #! Создал задачу для пользователя 2
+  Task.objects.create(title="member2", description="Test task Desc member2", project=project, assignee=member2, status="new", created_by=admin_user)
+
+  client.force_login(admin_user)
+  response = client.get(url, format="json")
+  results = response.data['results']
+
+  assert response.status_code == status.HTTP_200_OK
+  assert len(results) == 2
+  titles = {task['title'] for task in results}
+  assert titles == {"member1", "member2"}

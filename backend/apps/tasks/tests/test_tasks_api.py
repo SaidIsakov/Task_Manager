@@ -193,3 +193,93 @@ def test_member_cannot_delete_task(project, user):
 
   assert response.status_code == status.HTTP_403_FORBIDDEN
   assert Task.objects.filter(id=task.id).exists()
+
+
+@pytest.mark.django_db
+def test_viewer_cannot_delete_task(project, user):
+  """
+    VIEWER не может удалить задачу
+  """
+
+  client = APIClient()
+
+  #! Создаем пользователя
+  viewer = User.objects.create(username='viewer')
+  member = User.objects.create(username='member')
+
+  #! Добавляем участников в проект
+  ProjectMember.objects.create(user=viewer, project=project, role=ProjectRole.VIEWER)
+  ProjectMember.objects.create(user=member, project=project, role=ProjectRole.MEMBER)
+
+  #! Создаем задачу где наш пользователь(member) исполнитель
+  task = Task.objects.create(title="task_member1", description="Test task Desc member1", project=project, assignee=member, status="new", created_by=user)
+
+  client.force_login(viewer)
+  response = client.delete(f'/api/tasks/{task.id}/')
+
+  assert response.status_code == status.HTTP_403_FORBIDDEN
+  assert Task.objects.filter(id=task.id).exists()
+
+
+@pytest.mark.django_db
+def test_admin_can_delete_task(project, user):
+  """
+    ADMIN может удалять задачи
+  """
+  client = APIClient()
+
+  #! Создаю пользователей
+  admin_user = User.objects.create(username='admin_user')
+  member = User.objects.create(username='member')
+
+  #!  Добавляем участников в проект
+  ProjectMember.objects.create(user=admin_user, project=project, role=ProjectRole.ADMIN)
+  ProjectMember.objects.create(user=member, project=project, role=ProjectRole.MEMBER)
+
+  #! Создаём задачу, назначенную на другого пользователя
+  task = Task.objects.create(
+        title="member_task",
+        description="...",
+        project=project,
+        assignee=member,
+        status="new",
+        created_by=user
+    )
+
+  client.force_login(admin_user)
+  response = client.delete(f'/api/tasks/{task.id}/')
+
+  assert response.status_code == status.HTTP_204_NO_CONTENT
+  assert not Task.objects.filter(id=task.id).exists()
+
+
+@pytest.mark.django_db
+def test_owner_can_delete_task(project, user):
+  """
+    OWNER может удалять задачи
+  """
+  client = APIClient()
+
+  #! Создаю пользователей
+  owner = User.objects.create(username='owner_user')
+  member = User.objects.create(username='member')
+
+  #!  Добавляем участников в проект
+  ProjectMember.objects.create(user=owner, project=project, role=ProjectRole.OWNER)
+  ProjectMember.objects.create(user=member, project=project, role=ProjectRole.MEMBER)
+
+  #! Создаём задачу, назначенную на другого пользователя
+  task = Task.objects.create(
+        title="member_task",
+        description="...",
+        project=project,
+        assignee=member,
+        status="new",
+        created_by=user
+    )
+
+  client.force_login(owner)
+  response = client.delete(f'/api/tasks/{task.id}/')
+
+  assert response.status_code == status.HTTP_204_NO_CONTENT
+  assert not Task.objects.filter(id=task.id).exists()

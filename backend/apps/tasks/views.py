@@ -62,3 +62,5 @@ class TaskViewSet(ModelViewSet):
     if self.action in ['destroy']:
       return [CanDeleteTask()]
     return [IsTaskProjectMember()]
+
+

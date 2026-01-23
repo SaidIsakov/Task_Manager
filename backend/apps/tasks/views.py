@@ -2,11 +2,11 @@ from rest_framework.viewsets import ModelViewSet
 from .serializers import TaskSerializer
 from .models import Task
 from .permissions import CanCreateTask, CanUpdateTask, CanDeleteTask,IsTaskProjectMember
-from django.db.models import Q
 from .filters import TaskFilter
 from .tasks import send_email_assignee
 from django.views.generic import TemplateView
 from apps.projects.models import ProjectMember, ProjectRole, Project
+
 
 class IndexView(TemplateView):
   template_name = 'index.html'

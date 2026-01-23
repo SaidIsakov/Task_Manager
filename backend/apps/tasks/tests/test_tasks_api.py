@@ -8,8 +8,11 @@ from rest_framework.test import APIClient
 
 @pytest.mark.django_db
 def test_task_create(project, auth_client, user, project_member):
-  url = '/api/tasks/'
+  """
+    Создание задачи
+  """
 
+  url = '/api/tasks/'
 
   data = {
     "title": "Test task",
@@ -27,6 +30,10 @@ def test_task_create(project, auth_client, user, project_member):
 
 @pytest.mark.django_db
 def test_task_list(user, auth_client, project, project_member):
+  """
+    Вывод списока задач
+  """
+
   url = '/api/tasks/'
   Task.objects.create(title="Test task 2", description="Test task Desc 2", project=project, assignee=user, status="new", created_by=user)
 
@@ -41,7 +48,7 @@ def test_task_list(user, auth_client, project, project_member):
 @pytest.mark.django_db
 def test_project_owner_can_see_all_tasks_in_project(user, project, project_member, auth_client):
   '''
-  Владелец проекта видит все задачи в проекте, даже если они назначены другим пользователям.
+    Владелец проекта видит все задачи в проекте, даже если они назначены другим пользователям.
   '''
 
   url = '/api/tasks/'
@@ -127,3 +134,62 @@ def test_admin_sees_all_tasks_in_project(project):
   assert len(results) == 2
   titles = {task['title'] for task in results}
   assert titles == {"member1", "member2"}
+
+
+@pytest.mark.django_db
+def test_viewer_sees_all_tasks_in_project(user, project):
+  """
+    Viewer может видеть все задачи
+  """
+
+  url = '/api/tasks/'
+  client = APIClient()
+
+  #! Создаем пользователей
+  viewer_user = User.objects.create(username='viewer_user')
+  member1 = User.objects.create(username='member1')
+  member2 = User.objects.create(username='member2')
+
+  #! Назначаю роли
+  ProjectMember.objects.create(user=viewer_user, project=project, role=ProjectRole.VIEWER)
+  ProjectMember.objects.create(user=member1, project=project, role=ProjectRole.MEMBER)
+  ProjectMember.objects.create(user=member2, project=project, role=ProjectRole.MEMBER)
+
+   #! Создал задачу для пользователя 1
+  Task.objects.create(title="member1", description="Test task Desc member1", project=project, assignee=member1, status="new", created_by=user)
+
+  #! Создал задачу для пользователя 2
+  Task.objects.create(title="member2", description="Test task Desc member2", project=project, assignee=member2, status="new", created_by=user)
+
+  client.force_login(viewer_user)
+  response = client.get(url, format="json")
+  results = response.data['results']
+
+  assert response.status_code == status.HTTP_200_OK
+  assert len(results) == 2
+  titles = {task['title'] for task in results}
+  assert titles == {"member1", "member2"}
+
+
+@pytest.mark.django_db
+def test_member_cannot_delete_task(project, user):
+  """
+    MEMBER не может удалить задачу
+  """
+
+  client = APIClient()
+
+  #! Создаем пользователя
+  member = User.objects.create(username='member')
+
+  #! Присваиваю ему роль MEMBER
+  ProjectMember.objects.create(user=member, project=project, role=ProjectRole.MEMBER)
+
+  #! Создаем задачу где наш пользователь(member) исполнитель
+  task = Task.objects.create(title="task_member1", description="Test task Desc member1", project=project, assignee=member, status="new", created_by=user)
+
+  client.force_login(member)
+  response = client.delete(f'/api/tasks/{task.id}/')
+
+  assert response.status_code == status.HTTP_403_FORBIDDEN
+  assert Task.objects.filter(id=task.id).exists()

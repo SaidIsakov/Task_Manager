@@ -30,3 +30,15 @@ def project_member(project, user):
   return project_member_user
 
 
+@pytest.fixture
+def create_user(db):
+  def _create_user(username):
+    return User.objects.create(username=username)
+  return _create_user
+
+
+@pytest.fixture
+def add_member_to_project(db):
+  def _add_member(user, project, role):
+    return ProjectMember.objects.create(user=user, project=project, role=role)
+  return _add_member

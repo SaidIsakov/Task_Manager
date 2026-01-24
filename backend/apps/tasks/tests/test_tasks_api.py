@@ -46,16 +46,17 @@ def test_task_list(user, auth_client, project, project_member):
 
 
 @pytest.mark.django_db
-def test_project_owner_can_see_all_tasks_in_project(user, project, project_member, auth_client):
+def test_project_owner_can_see_all_tasks_in_project(user, project, project_member, auth_client,
+                                                    create_user, add_member_to_project):
   '''
     Владелец проекта видит все задачи в проекте, даже если они назначены другим пользователям.
   '''
 
   url = '/api/tasks/'
 
-  other_user = User.objects.create(username="Other_user")
+  other_user = create_user("Other_user")
 
-  ProjectMember.objects.create(user=other_user, project=project, role=ProjectRole.MEMBER)
+  add_member_to_project(other_user, project, ProjectRole.MEMBER)
 
   Task.objects.create(title="USER_TASK", description="Test task Desc USER", project=project, assignee=other_user, status="new", created_by=other_user)
 
@@ -70,7 +71,7 @@ def test_project_owner_can_see_all_tasks_in_project(user, project, project_membe
 
 
 @pytest.mark.django_db
-def test_project_member_sees_only_own_tasks(user, project):
+def test_project_member_sees_only_own_tasks(user, project, create_user, add_member_to_project):
   '''
     Участник проекта может видеть только свои задачи
   '''
@@ -79,12 +80,12 @@ def test_project_member_sees_only_own_tasks(user, project):
   client = APIClient()
 
   #! Создаю пользователей
-  user1 = User.objects.create(username="Other_user1")
-  user2 = User.objects.create(username="Other_user2")
+  user1 = create_user("Other_user1")
+  user2 = create_user("Other_user2")
 
   #! Присваиваю пользователям роль "Участник"
-  ProjectMember.objects.create(user=user1, project=project, role=ProjectRole.MEMBER)
-  ProjectMember.objects.create(user=user2, project=project, role=ProjectRole.MEMBER)
+  add_member_to_project(user1, project, ProjectRole.MEMBER)
+  add_member_to_project(user2, project, ProjectRole.MEMBER)
 
   #! Создал задачу для пользователя 1
   Task.objects.create(title="USER1_TASK", description="Test task Desc USER", project=project, assignee=user1, status="new", created_by=user)
@@ -104,21 +105,22 @@ def test_project_member_sees_only_own_tasks(user, project):
 
 
 @pytest.mark.django_db
-def test_admin_sees_all_tasks_in_project(project):
+def test_admin_sees_all_tasks_in_project(project, create_user, add_member_to_project):
   """
     Админ проекта видит все задачи
   """
   url = '/api/tasks/'
   client = APIClient()
 
-  admin_user = User.objects.create(username='admin_user')
-  member1 = User.objects.create(username='member1')
-  member2 = User.objects.create(username='member2')
+  admin_user = create_user('admin_user')
+  member1 = create_user('member1')
+  member2 = create_user('member2')
 
   #! Назначаю роли
-  ProjectMember.objects.create(user=admin_user, project=project, role=ProjectRole.ADMIN)
-  ProjectMember.objects.create(user=member1, project=project, role=ProjectRole.MEMBER)
-  ProjectMember.objects.create(user=member2, project=project, role=ProjectRole.MEMBER)
+  add_member_to_project(admin_user, project, ProjectRole.ADMIN)
+  add_member_to_project(member1, project, ProjectRole.MEMBER)
+  add_member_to_project(member2, project, ProjectRole.MEMBER)
+
 
    #! Создал задачу для пользователя 1
   Task.objects.create(title="member1", description="Test task Desc member1", project=project, assignee=member1, status="new", created_by=admin_user)
@@ -137,7 +139,7 @@ def test_admin_sees_all_tasks_in_project(project):
 
 
 @pytest.mark.django_db
-def test_viewer_sees_all_tasks_in_project(user, project):
+def test_viewer_sees_all_tasks_in_project(user, project, create_user, add_member_to_project):
   """
     Viewer может видеть все задачи
   """
@@ -146,14 +148,14 @@ def test_viewer_sees_all_tasks_in_project(user, project):
   client = APIClient()
 
   #! Создаем пользователей
-  viewer_user = User.objects.create(username='viewer_user')
-  member1 = User.objects.create(username='member1')
-  member2 = User.objects.create(username='member2')
+  viewer_user = create_user('viewer_user')
+  member1 = create_user('member1')
+  member2 = create_user('member2')
 
   #! Назначаю роли
-  ProjectMember.objects.create(user=viewer_user, project=project, role=ProjectRole.VIEWER)
-  ProjectMember.objects.create(user=member1, project=project, role=ProjectRole.MEMBER)
-  ProjectMember.objects.create(user=member2, project=project, role=ProjectRole.MEMBER)
+  add_member_to_project(viewer_user, project, ProjectRole.ADMIN)
+  add_member_to_project(member1, project, ProjectRole.MEMBER)
+  add_member_to_project(member2, project, ProjectRole.MEMBER)
 
    #! Создал задачу для пользователя 1
   Task.objects.create(title="member1", description="Test task Desc member1", project=project, assignee=member1, status="new", created_by=user)
@@ -172,7 +174,7 @@ def test_viewer_sees_all_tasks_in_project(user, project):
 
 
 @pytest.mark.django_db
-def test_member_cannot_delete_task(project, user):
+def test_member_cannot_delete_task(project, user, create_user, add_member_to_project):
   """
     MEMBER не может удалить задачу
   """
@@ -180,10 +182,10 @@ def test_member_cannot_delete_task(project, user):
   client = APIClient()
 
   #! Создаем пользователя
-  member = User.objects.create(username='member')
+  member = create_user('member')
 
   #! Присваиваю ему роль MEMBER
-  ProjectMember.objects.create(user=member, project=project, role=ProjectRole.MEMBER)
+  add_member_to_project(member, project, ProjectRole.MEMBER)
 
   #! Создаем задачу где наш пользователь(member) исполнитель
   task = Task.objects.create(title="task_member1", description="Test task Desc member1", project=project, assignee=member, status="new", created_by=user)
@@ -196,7 +198,7 @@ def test_member_cannot_delete_task(project, user):
 
 
 @pytest.mark.django_db
-def test_viewer_cannot_delete_task(project, user):
+def test_viewer_cannot_delete_task(project, user, create_user, add_member_to_project):
   """
     VIEWER не может удалить задачу
   """
@@ -204,12 +206,12 @@ def test_viewer_cannot_delete_task(project, user):
   client = APIClient()
 
   #! Создаем пользователя
-  viewer = User.objects.create(username='viewer')
-  member = User.objects.create(username='member')
+  viewer = create_user('viewer')
+  member = create_user('member')
 
   #! Добавляем участников в проект
-  ProjectMember.objects.create(user=viewer, project=project, role=ProjectRole.VIEWER)
-  ProjectMember.objects.create(user=member, project=project, role=ProjectRole.MEMBER)
+  add_member_to_project(viewer, project, ProjectRole.VIEWER)
+  add_member_to_project(member, project, ProjectRole.MEMBER)
 
   #! Создаем задачу где наш пользователь(member) исполнитель
   task = Task.objects.create(title="task_member1", description="Test task Desc member1", project=project, assignee=member, status="new", created_by=user)
@@ -222,19 +224,19 @@ def test_viewer_cannot_delete_task(project, user):
 
 
 @pytest.mark.django_db
-def test_admin_can_delete_task(project, user):
+def test_admin_can_delete_task(project, user, create_user, add_member_to_project):
   """
     ADMIN может удалять задачи
   """
   client = APIClient()
 
   #! Создаю пользователей
-  admin_user = User.objects.create(username='admin_user')
-  member = User.objects.create(username='member')
+  admin_user = create_user('admin_user')
+  member = create_user('member')
 
   #!  Добавляем участников в проект
-  ProjectMember.objects.create(user=admin_user, project=project, role=ProjectRole.ADMIN)
-  ProjectMember.objects.create(user=member, project=project, role=ProjectRole.MEMBER)
+  add_member_to_project(admin_user, project, ProjectRole.ADMIN)
+  add_member_to_project(member, project, ProjectRole.MEMBER)
 
   #! Создаём задачу, назначенную на другого пользователя
   task = Task.objects.create(
@@ -254,19 +256,19 @@ def test_admin_can_delete_task(project, user):
 
 
 @pytest.mark.django_db
-def test_owner_can_delete_task(project, user):
+def test_owner_can_delete_task(project, user, create_user, add_member_to_project):
   """
     OWNER может удалять задачи
   """
   client = APIClient()
 
   #! Создаю пользователей
-  owner = User.objects.create(username='owner_user')
-  member = User.objects.create(username='member')
+  owner = create_user('owner_user')
+  member = create_user('member')
 
   #!  Добавляем участников в проект
-  ProjectMember.objects.create(user=owner, project=project, role=ProjectRole.OWNER)
-  ProjectMember.objects.create(user=member, project=project, role=ProjectRole.MEMBER)
+  add_member_to_project(owner, project, ProjectRole.OWNER)
+  add_member_to_project(member, project, ProjectRole.MEMBER)
 
   #! Создаём задачу, назначенную на другого пользователя
   task = Task.objects.create(

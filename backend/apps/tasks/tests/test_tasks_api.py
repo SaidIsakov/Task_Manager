@@ -153,7 +153,7 @@ def test_viewer_sees_all_tasks_in_project(user, project, create_user, add_member
   member2 = create_user('member2')
 
   #! Назначаю роли
-  add_member_to_project(viewer_user, project, ProjectRole.ADMIN)
+  add_member_to_project(viewer_user, project, ProjectRole.VIEWER)
   add_member_to_project(member1, project, ProjectRole.MEMBER)
   add_member_to_project(member2, project, ProjectRole.MEMBER)
 

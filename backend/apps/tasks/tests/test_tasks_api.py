@@ -29,13 +29,14 @@ def test_task_create(project, auth_client, user, project_member):
 
 
 @pytest.mark.django_db
-def test_task_list(user, auth_client, project, project_member):
+def test_task_list(user, auth_client, project, project_member, task_factory):
   """
     Вывод списока задач
   """
 
   url = '/api/tasks/'
-  Task.objects.create(title="Test task 2", description="Test task Desc 2", project=project, assignee=user, status="new", created_by=user)
+
+  task_factory(title="Test task 2", description="Test task Desc 2", project=project, assignee=user, status="new", created_by=user)
 
   response = auth_client.get(url)
   assert response.status_code == status.HTTP_200_OK
@@ -47,7 +48,7 @@ def test_task_list(user, auth_client, project, project_member):
 
 @pytest.mark.django_db
 def test_project_owner_can_see_all_tasks_in_project(user, project, project_member, auth_client,
-                                                    create_user, add_member_to_project):
+                                                    create_user, add_member_to_project, task_factory):
   '''
     Владелец проекта видит все задачи в проекте, даже если они назначены другим пользователям.
   '''
@@ -58,9 +59,9 @@ def test_project_owner_can_see_all_tasks_in_project(user, project, project_membe
 
   add_member_to_project(other_user, project, ProjectRole.MEMBER)
 
-  Task.objects.create(title="USER_TASK", description="Test task Desc USER", project=project, assignee=other_user, status="new", created_by=other_user)
+  task_factory(title="USER_TASK", description="Test task Desc USER", project=project, assignee=other_user, status="new", created_by=other_user)
 
-  Task.objects.create(title="Test task other_user", description="Test task Desc other_user", project=project, assignee=other_user, status="new", created_by=other_user)
+  task_factory(title="Test task other_user", description="Test task Desc other_user", project=project, assignee=other_user, status="new", created_by=other_user)
 
   #! Запрос делает другой user(owner)
   response = auth_client.get(url)
@@ -71,13 +72,13 @@ def test_project_owner_can_see_all_tasks_in_project(user, project, project_membe
 
 
 @pytest.mark.django_db
-def test_project_member_sees_only_own_tasks(user, project, create_user, add_member_to_project):
+def test_project_member_sees_only_own_tasks(user, project, create_user, add_member_to_project,
+                                            create_api_client, task_factory):
   '''
     Участник проекта может видеть только свои задачи
   '''
 
   url = '/api/tasks/'
-  client = APIClient()
 
   #! Создаю пользователей
   user1 = create_user("Other_user1")
@@ -88,13 +89,13 @@ def test_project_member_sees_only_own_tasks(user, project, create_user, add_memb
   add_member_to_project(user2, project, ProjectRole.MEMBER)
 
   #! Создал задачу для пользователя 1
-  Task.objects.create(title="USER1_TASK", description="Test task Desc USER", project=project, assignee=user1, status="new", created_by=user)
+  task_factory(title="USER1_TASK", description="Test task Desc USER", project=project, assignee=user1, status="new", created_by=user)
 
   #! Создал задачу для пользователя 2
-  Task.objects.create(title="USER2_TASK", description="Test task Desc other_user", project=project, assignee=user2, status="new", created_by=user)
+  task_factory(title="USER2_TASK", description="Test task Desc other_user", project=project, assignee=user2, status="new", created_by=user)
 
   #! Логиню пользователя
-  client.force_login(user1)
+  client = create_api_client(user1)
   response = client.get(url, format="json")
   result = response.data['results']
 
@@ -105,12 +106,11 @@ def test_project_member_sees_only_own_tasks(user, project, create_user, add_memb
 
 
 @pytest.mark.django_db
-def test_admin_sees_all_tasks_in_project(project, create_user, add_member_to_project):
+def test_admin_sees_all_tasks_in_project(project, create_user, add_member_to_project, create_api_client, task_factory):
   """
     Админ проекта видит все задачи
   """
   url = '/api/tasks/'
-  client = APIClient()
 
   admin_user = create_user('admin_user')
   member1 = create_user('member1')
@@ -123,12 +123,12 @@ def test_admin_sees_all_tasks_in_project(project, create_user, add_member_to_pro
 
 
    #! Создал задачу для пользователя 1
-  Task.objects.create(title="member1", description="Test task Desc member1", project=project, assignee=member1, status="new", created_by=admin_user)
+  task_factory(title="member1", description="Test task Desc member1", project=project, assignee=member1, status="new", created_by=admin_user)
 
   #! Создал задачу для пользователя 2
-  Task.objects.create(title="member2", description="Test task Desc member2", project=project, assignee=member2, status="new", created_by=admin_user)
+  task_factory(title="member2", description="Test task Desc member2", project=project, assignee=member2, status="new", created_by=admin_user)
 
-  client.force_login(admin_user)
+  client = create_api_client(admin_user)
   response = client.get(url, format="json")
   results = response.data['results']
 
@@ -139,13 +139,13 @@ def test_admin_sees_all_tasks_in_project(project, create_user, add_member_to_pro
 
 
 @pytest.mark.django_db
-def test_viewer_sees_all_tasks_in_project(user, project, create_user, add_member_to_project):
+def test_viewer_sees_all_tasks_in_project(user, project, create_user, add_member_to_project,
+                                          create_api_client, task_factory):
   """
     Viewer может видеть все задачи
   """
 
   url = '/api/tasks/'
-  client = APIClient()
 
   #! Создаем пользователей
   viewer_user = create_user('viewer_user')
@@ -158,12 +158,12 @@ def test_viewer_sees_all_tasks_in_project(user, project, create_user, add_member
   add_member_to_project(member2, project, ProjectRole.MEMBER)
 
    #! Создал задачу для пользователя 1
-  Task.objects.create(title="member1", description="Test task Desc member1", project=project, assignee=member1, status="new", created_by=user)
+  task_factory(title="member1", description="Test task Desc member1", project=project, assignee=member1, status="new", created_by=user)
 
   #! Создал задачу для пользователя 2
-  Task.objects.create(title="member2", description="Test task Desc member2", project=project, assignee=member2, status="new", created_by=user)
+  task_factory(title="member2", description="Test task Desc member2", project=project, assignee=member2, status="new", created_by=user)
 
-  client.force_login(viewer_user)
+  client = create_api_client(viewer_user)
   response = client.get(url, format="json")
   results = response.data['results']
 
@@ -174,12 +174,11 @@ def test_viewer_sees_all_tasks_in_project(user, project, create_user, add_member
 
 
 @pytest.mark.django_db
-def test_member_cannot_delete_task(project, user, create_user, add_member_to_project):
+def test_member_cannot_delete_task(project, user, create_user, add_member_to_project, create_api_client, task_factory):
   """
     MEMBER не может удалить задачу
   """
 
-  client = APIClient()
 
   #! Создаем пользователя
   member = create_user('member')
@@ -188,9 +187,9 @@ def test_member_cannot_delete_task(project, user, create_user, add_member_to_pro
   add_member_to_project(member, project, ProjectRole.MEMBER)
 
   #! Создаем задачу где наш пользователь(member) исполнитель
-  task = Task.objects.create(title="task_member1", description="Test task Desc member1", project=project, assignee=member, status="new", created_by=user)
+  task = task_factory(title="task_member1", description="Test task Desc member1", project=project, assignee=member, status="new", created_by=user)
 
-  client.force_login(member)
+  client = create_api_client(member)
   response = client.delete(f'/api/tasks/{task.id}/')
 
   assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -198,12 +197,10 @@ def test_member_cannot_delete_task(project, user, create_user, add_member_to_pro
 
 
 @pytest.mark.django_db
-def test_viewer_cannot_delete_task(project, user, create_user, add_member_to_project):
+def test_viewer_cannot_delete_task(project, user, create_user, add_member_to_project, create_api_client, task_factory):
   """
     VIEWER не может удалить задачу
   """
-
-  client = APIClient()
 
   #! Создаем пользователя
   viewer = create_user('viewer')
@@ -214,9 +211,9 @@ def test_viewer_cannot_delete_task(project, user, create_user, add_member_to_pro
   add_member_to_project(member, project, ProjectRole.MEMBER)
 
   #! Создаем задачу где наш пользователь(member) исполнитель
-  task = Task.objects.create(title="task_member1", description="Test task Desc member1", project=project, assignee=member, status="new", created_by=user)
+  task = task_factory(title="task_member1", description="Test task Desc member1", project=project, assignee=member, status="new", created_by=user)
 
-  client.force_login(viewer)
+  client = create_api_client(viewer)
   response = client.delete(f'/api/tasks/{task.id}/')
 
   assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -224,11 +221,10 @@ def test_viewer_cannot_delete_task(project, user, create_user, add_member_to_pro
 
 
 @pytest.mark.django_db
-def test_admin_can_delete_task(project, user, create_user, add_member_to_project):
+def test_admin_can_delete_task(project, user, create_user, add_member_to_project, create_api_client, task_factory):
   """
     ADMIN может удалять задачи
   """
-  client = APIClient()
 
   #! Создаю пользователей
   admin_user = create_user('admin_user')
@@ -239,16 +235,14 @@ def test_admin_can_delete_task(project, user, create_user, add_member_to_project
   add_member_to_project(member, project, ProjectRole.MEMBER)
 
   #! Создаём задачу, назначенную на другого пользователя
-  task = Task.objects.create(
-        title="member_task",
+  task = task_factory(title="member_task",
         description="...",
         project=project,
         assignee=member,
         status="new",
-        created_by=user
-    )
+        created_by=user)
 
-  client.force_login(admin_user)
+  client = create_api_client(admin_user)
   response = client.delete(f'/api/tasks/{task.id}/')
 
   assert response.status_code == status.HTTP_204_NO_CONTENT
@@ -256,11 +250,10 @@ def test_admin_can_delete_task(project, user, create_user, add_member_to_project
 
 
 @pytest.mark.django_db
-def test_owner_can_delete_task(project, user, create_user, add_member_to_project):
+def test_owner_can_delete_task(project, user, create_user, add_member_to_project, create_api_client, task_factory):
   """
     OWNER может удалять задачи
   """
-  client = APIClient()
 
   #! Создаю пользователей
   owner = create_user('owner_user')
@@ -271,16 +264,14 @@ def test_owner_can_delete_task(project, user, create_user, add_member_to_project
   add_member_to_project(member, project, ProjectRole.MEMBER)
 
   #! Создаём задачу, назначенную на другого пользователя
-  task = Task.objects.create(
-        title="member_task",
+  task = task_factory(title="member_task",
         description="...",
         project=project,
         assignee=member,
         status="new",
-        created_by=user
-    )
+        created_by=user)
 
-  client.force_login(owner)
+  client = create_api_client(owner)
   response = client.delete(f'/api/tasks/{task.id}/')
 
   assert response.status_code == status.HTTP_204_NO_CONTENT

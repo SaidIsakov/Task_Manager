@@ -42,3 +42,25 @@ def add_member_to_project(db):
   def _add_member(user, project, role):
     return ProjectMember.objects.create(user=user, project=project, role=role)
   return _add_member
+
+
+@pytest.fixture
+def create_api_client(db):
+  def _cliet_for(user):
+    client = APIClient()
+    client.force_login(user)
+    return client
+  return _cliet_for
+
+
+@pytest.fixture
+def task_factory(db):
+  def _task_factory(**kwargs):
+    defaults = {
+        "title": "Test Task",
+        "description": "Desc",
+        "status": "new",
+      }
+    defaults.update(kwargs)
+    return Task.objects.create(**defaults)
+  return _task_factory

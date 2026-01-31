@@ -276,3 +276,173 @@ def test_owner_can_delete_task(project, user, create_user, add_member_to_project
 
   assert response.status_code == status.HTTP_204_NO_CONTENT
   assert not Task.objects.filter(id=task.id).exists()
+
+
+@pytest.mark.django_db
+def test_admin_can_update_task(user, project, create_user, create_api_client, task_factory,
+                               add_member_to_project):
+  """
+  ADMIN может редактировать задач
+  """
+   #! Создаем пользователей
+  admin = create_user('admin')
+  member = create_user('member')
+
+  add_member_to_project(admin, project, ProjectRole.ADMIN)
+  add_member_to_project(member, project, ProjectRole.MEMBER)
+
+  #! Создаю задачи
+  task = task_factory(project=project, assignee=member, title='Old title', created_by=user)
+
+  #! Авторизация как админ
+  client = create_api_client(admin)
+
+  response = client.patch(
+    f'/api/tasks/{task.id}/',
+    {"title" : "Updated by Admin"},
+    format="json"
+  )
+
+  assert response.status_code == status.HTTP_200_OK
+  assert response.data["title"] == "Updated by Admin"
+
+@pytest.mark.django_db
+def test_owner_can_update_task(user, project, create_user, create_api_client, task_factory,
+                               add_member_to_project):
+  """
+  OWNER может редактировать задач
+  """
+   #! Создаем пользователей
+  owner = create_user('owner')
+  member = create_user('member')
+
+  add_member_to_project(owner, project, ProjectRole.OWNER)
+  add_member_to_project(member, project, ProjectRole.MEMBER)
+
+  #! Создаю задачи
+  task = task_factory(project=project, assignee=member, title='Old title', created_by=user)
+
+  #! Авторизация как owner
+  client = create_api_client(owner)
+
+  response = client.patch(
+    f'/api/tasks/{task.id}/',
+    {"title" : "Updated by Owner"},
+    format="json"
+  )
+
+  assert response.status_code == status.HTTP_200_OK
+  assert response.data["title"] == "Updated by Owner"
+
+
+@pytest.mark.django_db
+def test_member_can_update_own_task(user, project, create_user, create_api_client, task_factory,
+                               add_member_to_project):
+  """
+  MEMBER может редактировать только свою задачу
+  """
+   #! Создаем пользователей
+  member1 = create_user('member1')
+
+  add_member_to_project(member1, project, ProjectRole.MEMBER)
+
+  #! Создаю задачи
+  task = task_factory(project=project, assignee=member1, title='Old title', created_by=user)
+
+  #! Авторизация как member
+  client = create_api_client(member1)
+
+  response = client.patch(
+    f'/api/tasks/{task.id}/',
+    {"title" : "Updated by Member1"},
+    format="json"
+  )
+
+  assert response.status_code == status.HTTP_200_OK
+  assert response.data["title"] == "Updated by Member1"
+
+
+@pytest.mark.django_db
+def test_member_cannot_update_other_task(user, project, create_user, create_api_client, task_factory,
+                                         add_member_to_project):
+  """
+  MEMBER не может редактировать чужие задачи --> HTTP_404_NOT_FOUND
+  """
+   #! Создаем пользователей
+  member1 = create_user('member1')
+  member2 = create_user('member2')
+
+  add_member_to_project(member1, project, ProjectRole.MEMBER)
+  add_member_to_project(member2, project, ProjectRole.MEMBER)
+
+  #! Создаю задачи
+  task = task_factory(project=project, assignee=member2, title='Old title', created_by=user)
+
+  #! Авторизация как member
+  client = create_api_client(member1)
+
+  response = client.patch(
+    f'/api/tasks/{task.id}/',
+    {"title" : "Updated by Member1"},
+    format="json"
+  )
+
+  assert response.status_code == status.HTTP_404_NOT_FOUND
+  task.refresh_from_db()
+  assert task.title == 'Old title'
+
+@pytest.mark.django_db
+def test_viewer_cannot_update_other_task(user, project, create_user, create_api_client, task_factory,
+                                         add_member_to_project):
+  """
+  VIEWER не может редактировать чужие задачи --> HTTP_403_FORBIDDEN
+  """
+   #! Создаем пользователей
+  member = create_user('member1')
+  viewer = create_user('viewer')
+
+  add_member_to_project(member, project, ProjectRole.MEMBER)
+  add_member_to_project(viewer, project, ProjectRole.VIEWER)
+
+  #! Создаю задачи
+  task = task_factory(project=project, assignee=member, title='Old title', created_by=user)
+
+  #! Авторизация как viewer
+  client = create_api_client(viewer)
+
+  response = client.patch(
+    f'/api/tasks/{task.id}/',
+    {"title" : "Updated by Viewer"},
+    format="json"
+  )
+
+  assert response.status_code == status.HTTP_403_FORBIDDEN
+  task.refresh_from_db()
+  assert task.title == 'Old title'
+
+
+
+@pytest.mark.django_db
+def test_viewer_cannot_update_own_task(user, project, create_user, create_api_client, task_factory,
+                                         add_member_to_project):
+  """
+  VIEWER не может редактировать свою задачу --> HTTP_403_FORBIDDEN
+  """
+   #! Создаем пользователей
+  viewer = create_user('viewer')
+
+  add_member_to_project(viewer, project, ProjectRole.VIEWER)
+
+  #! Создаю задачи
+  task = task_factory(project=project, assignee=viewer, title='Old title', created_by=user)
+
+  #! Авторизация как viewer
+  client = create_api_client(viewer)
+
+  response = client.patch(
+    f'/api/tasks/{task.id}/',
+    {"title" : "Updated by Viewer"},
+    format="json"
+  )
+
+  assert response.status_code == status.HTTP_403_FORBIDDEN

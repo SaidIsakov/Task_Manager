@@ -37,6 +37,7 @@ INSTALLED_APPS += [
   'rest_framework',
   'django_filters',
   'corsheaders',
+  'drf_spectacular',
 
   # OAuth
     'oauth2_provider',
@@ -147,6 +148,27 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
 
     # 'EXCEPTION_HANDLER': 'apps.utils.exceptions.custom_exception_handler',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Task Manager API',
+    'DESCRIPTION': '''
+    Система управления задачами с ролями участников:
+
+    - **OWNER**: владелец проекта, полный доступ
+    - **ADMIN**: администратор проекта, полный доступ
+    - **MEMBER**: участник, видит и редактирует только свои задачи
+    - **VIEWER**: наблюдатель, только чтение
+
+    Все операции требуют аутентификации.
+    ''',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SWAGGER_UI_SETTINGS': {
+        'persistAuthorization': True,
+    },
 }
 
 
